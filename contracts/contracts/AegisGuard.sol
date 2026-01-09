@@ -2,13 +2,14 @@
 pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title AegisGuard
  * @notice A smart wallet that enforces Function-Level Intents AND Parameter-Level Spending Limits.
  * @dev Supports native ETH and ERC-20 (MNEE) tokens.
  */
-contract AegisGuard {
+contract AegisGuard is ReentrancyGuard {
     // --- State Variables ---
 
     address public owner;
@@ -22,9 +23,12 @@ contract AegisGuard {
 
     // Token Address -> Daily Spending Limit (0 = No Limit)
     mapping(address => uint256) public spendingLimits;
-    
+
     // Token Address -> Amount Spent Today
     mapping(address => uint256) public spentToday;
+
+    // Token Address -> Last Reset Timestamp
+    mapping(address => uint256) public lastResetTimestamp;
 
     // --- Events ---
     event Deposit(address indexed sender, uint256 amount);
@@ -75,7 +79,7 @@ contract AegisGuard {
 
     // --- Execution Logic ---
 
-    function execute(address target, bytes calldata data) external onlyAgentOrOwner payable {
+    function execute(address target, bytes calldata data) external onlyAgentOrOwner nonReentrant payable {
         require(data.length >= 4, "Aegis: Data too short");
         bytes4 selector = bytes4(data[:4]);
 
@@ -117,7 +121,7 @@ contract AegisGuard {
              emit PolicyViolation(token, bytes4(data[:4]), "Invalid Transfer Data", data);
              return false;
         }
-        
+
         uint256 amount;
         assembly {
             // Skip selector (4) + address (32) = 36
@@ -126,6 +130,12 @@ contract AegisGuard {
 
         uint256 limit = spendingLimits[token];
         if (limit > 0) {
+            // Reset daily limit if 24 hours have passed
+            if (block.timestamp >= lastResetTimestamp[token] + 1 days) {
+                spentToday[token] = 0;
+                lastResetTimestamp[token] = block.timestamp;
+            }
+
             if (spentToday[token] + amount > limit) {
                 emit PolicyViolation(token, bytes4(data[:4]), "Spending Limit Exceeded", data);
                 return false;
