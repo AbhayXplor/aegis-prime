@@ -120,9 +120,9 @@ export default function Home() {
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              Aegis <span className="text-zinc-500 font-light italic">Prime</span>
+              Aegis <span className="text-accent-gold font-light italic">CFO</span>
             </h1>
-            <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.2em]">Autonomous Security Protocol</p>
+            <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-[0.2em]">AI Treasury Manager</p>
           </div>
         </div>
 
@@ -221,7 +221,7 @@ export default function Home() {
               {demoPhase === 1 && (
                 <div className="px-4 py-2 bg-red-500/20 border border-red-500/50 rounded-lg backdrop-blur-md animate-pulse flex items-center gap-3">
                   <AlertOctagon className="w-5 h-5 text-red-500" />
-                  <span className="text-xs font-bold text-red-200 uppercase tracking-widest">Rogue Agent Detected</span>
+                  <span className="text-xs font-bold text-red-200 uppercase tracking-widest">Security Stress Test Active</span>
                 </div>
               )}
             </div>
@@ -249,7 +249,7 @@ export default function Home() {
       <section className="max-w-[1600px] mx-auto w-full mt-12 pb-20">
         <div className="flex items-center gap-3 mb-8">
           <div className="h-px flex-1 bg-white/10" />
-          <h2 className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.3em] px-4">System Intelligence & Analytics</h2>
+          <h2 className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.3em] px-4">Treasury Analytics & Forecast</h2>
           <div className="h-px flex-1 bg-white/10" />
         </div>
         <AnalyticsDashboard />

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle, XCircle, Activity, Zap, ShieldAlert, Terminal, Trash2, ShieldCheck } from "lucide-react";
+import { CheckCircle, XCircle, Activity, Zap, ShieldAlert, Terminal, Trash2, ShieldCheck, AlertTriangle } from "lucide-react";
 import { supabase, clearTransactions } from "../lib/supabase";
 import { KNOWN_ENTITIES } from "@/lib/constants";
 
@@ -88,18 +88,22 @@ export function ActivityFeed() {
                             animate={{ opacity: 1, x: 0 }}
                             className={`p-2.5 rounded border-l-2 transition-all duration-300 font-mono text-[10px] ${tx.status === "SUCCESS"
                                 ? "bg-emerald-900/10 border-l-emerald-500 border-y border-r border-white/5 hover:bg-emerald-900/20"
-                                : "bg-red-900/10 border-l-red-500 border-y border-r border-white/5 hover:bg-red-900/20"
+                                : tx.status === "WARNING"
+                                    ? "bg-yellow-900/10 border-l-yellow-500 border-y border-r border-white/5 hover:bg-yellow-900/20"
+                                    : "bg-red-900/10 border-l-red-500 border-y border-r border-white/5 hover:bg-red-900/20"
                                 }`}
                         >
                             <div className="flex items-center justify-between mb-1">
                                 <div className="flex items-center space-x-1.5">
                                     {tx.status === "SUCCESS" ? (
                                         <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                                    ) : tx.status === "WARNING" ? (
+                                        <AlertTriangle className="w-3 h-3 text-yellow-500" />
                                     ) : (
                                         <ShieldAlert className="w-3 h-3 text-red-500" />
                                     )}
-                                    <span className={`font-bold ${tx.status === "SUCCESS" ? "text-emerald-500" : "text-red-500"}`}>
-                                        {tx.status === "SUCCESS" ? "AUTHORIZED" : "BLOCKED"}
+                                    <span className={`font-bold ${tx.status === "SUCCESS" ? "text-emerald-500" : tx.status === "WARNING" ? "text-yellow-500" : "text-red-500"}`}>
+                                        {tx.status === "SUCCESS" ? "AUTHORIZED" : tx.status === "WARNING" ? "QUARANTINED" : "BLOCKED"}
                                     </span>
                                     <span className="text-gray-500 opacity-30">|</span>
                                     <span className="text-gray-400 opacity-50 text-[9px]">{tx.function_selector}</span>

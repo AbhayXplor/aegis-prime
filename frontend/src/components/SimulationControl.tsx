@@ -12,6 +12,7 @@ interface SimulationControlProps {
 export default function SimulationControl({ isRealMode = false, isPaused = false }: SimulationControlProps) {
     const [isRunning, setIsRunning] = useState(false);
     const [status, setStatus] = useState("IDLE");
+    const [attackType, setAttackType] = useState("PAYROLL");
 
     // 1. Sync with Supabase State
     useEffect(() => {
@@ -47,12 +48,12 @@ export default function SimulationControl({ isRealMode = false, isPaused = false
                 return;
             }
 
-            setStatus("ATTACKING");
+            setStatus(attackType === 'PAYROLL' ? "PROCESSING PAYROLL..." : "UNAUTHORIZED TRANSFER DETECTED...");
             try {
                 await fetch('/api/rogue-agent', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'RANDOM' })
+                    body: JSON.stringify({ action: attackType === 'PAYROLL' ? 'RANDOM' : 'ATTACK', type: attackType })
                 });
             } catch (e) {
                 console.error("Agent Error:", e);
@@ -73,7 +74,7 @@ export default function SimulationControl({ isRealMode = false, isPaused = false
             active = false;
             clearTimeout(timeoutId);
         };
-    }, [isRunning]);
+    }, [isRunning, isPaused, attackType]);
 
     // 3. Toggle Handler
     const toggleSimulation = async () => {
@@ -85,41 +86,53 @@ export default function SimulationControl({ isRealMode = false, isPaused = false
 
     return (
         <div className={`glass-panel p-6 rounded-xl relative overflow-hidden group ${isRealMode ? 'opacity-50 grayscale' : ''}`}>
-            <div className="absolute inset-0 bg-gradient-to-r from-cyber-red/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-to-r from-accent-blue/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
             <div className="flex items-center justify-between relative z-10">
                 <div>
                     <h3 className="text-sm font-bold text-white flex items-center tracking-wider">
-                        <Zap className={`w-4 h-4 mr-2 ${isRunning ? 'text-cyber-red animate-pulse' : 'text-cyber-cyan'}`} />
-                        AI EMPLOYEE SIMULATION
+                        <Zap className={`w-4 h-4 mr-2 ${isRunning ? 'text-accent-gold animate-pulse' : 'text-accent-blue'}`} />
+                        PAYROLL AUTOMATOR
                     </h3>
                     <p className="text-[10px] text-gray-400 font-mono mt-1">
-                        STATUS: <span className={isRunning ? (isPaused ? "text-yellow-500 font-bold animate-pulse" : "text-cyber-red font-bold") : "text-gray-500"}>
-                            {isRealMode ? "DISABLED (REAL MODE)" : (isPaused ? "SYSTEM PAUSED (KILL SWITCH)" : (status === "ATTACKING" ? "EXECUTING TRANSACTIONS..." : status))}
+                        STATUS: <span className={isRunning ? (isPaused ? "text-yellow-500 font-bold animate-pulse" : (attackType === 'PAYROLL' ? "text-accent-emerald font-bold" : "text-accent-rose font-bold")) : "text-gray-500"}>
+                            {isRealMode ? "DISABLED (REAL MODE)" : (isPaused ? "SYSTEM PAUSED (KILL SWITCH)" : status)}
                         </span>
                     </p>
                 </div>
 
-                <button
-                    onClick={toggleSimulation}
-                    disabled={isRealMode}
-                    className={`px-4 py-2 rounded-lg font-bold text-xs tracking-wider flex items-center transition-all duration-300 ${isRealMode
-                        ? "bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700"
-                        : isRunning
-                            ? "bg-cyber-red/20 text-cyber-red border border-cyber-red/50 hover:bg-cyber-red/30 shadow-[0_0_15px_rgba(239,68,68,0.3)]"
-                            : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10 hover:text-white"
-                        }`}
-                >
-                    {isRunning ? (
-                        <>
-                            <Square className="w-3 h-3 mr-2 fill-current" /> STOP ATTACK
-                        </>
-                    ) : (
-                        <>
-                            <Play className="w-3 h-3 mr-2 fill-current" /> START SIMULATION
-                        </>
-                    )}
-                </button>
+                <div className="flex items-center space-x-2">
+                    <select
+                        value={attackType}
+                        onChange={(e) => setAttackType(e.target.value)}
+                        disabled={isRunning || isRealMode}
+                        className="bg-black/40 border border-white/10 text-xs text-gray-300 rounded px-2 py-1 focus:outline-none focus:border-accent-blue/50"
+                    >
+                        <option value="PAYROLL">Run Standard Payroll</option>
+                        <option value="DRAINER">Compromised: Drain Treasury</option>
+                    </select>
+
+                    <button
+                        onClick={toggleSimulation}
+                        disabled={isRealMode}
+                        className={`px-4 py-2 rounded-lg font-bold text-xs tracking-wider flex items-center transition-all duration-300 ${isRealMode
+                            ? "bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700"
+                            : isRunning
+                                ? "bg-accent-rose/20 text-accent-rose border border-accent-rose/50 hover:bg-accent-rose/30 shadow-[0_0_15px_rgba(244,63,94,0.3)]"
+                                : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10 hover:text-white"
+                            }`}
+                    >
+                        {isRunning ? (
+                            <>
+                                <Square className="w-3 h-3 mr-2 fill-current" /> HALT
+                            </>
+                        ) : (
+                            <>
+                                <Play className="w-3 h-3 mr-2 fill-current" /> START
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
         </div>
     );

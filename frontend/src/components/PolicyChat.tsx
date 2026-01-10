@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Send, Shield, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
+import { Send, Shield, CheckCircle, AlertTriangle, Loader2, Mic } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { parsePolicyIntent, PolicyIntent } from "@/lib/policyParser";
 
@@ -54,8 +54,8 @@ export function PolicyChat() {
     return (
         <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 backdrop-blur-xl shadow-2xl h-full flex flex-col">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-gray-500 text-[9px] font-bold uppercase tracking-[0.2em]">AI Policy Engine</h2>
-                <div className="flex items-center text-blue-400 text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-400/5 border border-blue-400/20">
+                <h2 className="text-gray-500 text-[9px] font-bold uppercase tracking-[0.2em]">Treasury Policy Engine</h2>
+                <div className="flex items-center text-accent-blue text-[9px] font-bold px-1.5 py-0.5 rounded bg-accent-blue/5 border border-accent-blue/20">
                     <Shield className="w-2.5 h-2.5 mr-1" /> ACTIVE
                 </div>
             </div>
@@ -64,7 +64,8 @@ export function PolicyChat() {
             <div className="flex-1 overflow-y-auto space-y-2 mb-3 min-h-[120px] pr-2 custom-scrollbar">
                 {activePolicies.length === 0 && !proposedPolicy && (
                     <div className="text-center text-gray-600 text-[10px] mt-8">
-                        No active policies. <br /> Type a rule below to start.
+                        No active mandates. <br /> Speak a rule to start. <br />
+                        <span className="italic opacity-50">"Set spending limit to 5k MNEE"</span>
                     </div>
                 )}
 
@@ -152,17 +153,41 @@ export function PolicyChat() {
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder='e.g., "Allow Uniswap"'
-                    className="w-full bg-black/40 border border-white/10 rounded-lg py-2 pl-3 pr-10 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
+                    placeholder='e.g., "Allow Payroll to send 5000 MNEE"'
+                    className="w-full bg-black/40 border border-white/10 rounded-lg py-2 pl-3 pr-16 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
                     disabled={isLoading}
                 />
-                <button
-                    type="submit"
-                    disabled={isLoading || !input.trim()}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 bg-blue-600 text-white rounded-md hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors"
-                >
-                    {isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                </button>
+                <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center space-x-1">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (!('webkitSpeechRecognition' in window)) {
+                                alert("Voice input not supported in this browser.");
+                                return;
+                            }
+                            const recognition = new (window as any).webkitSpeechRecognition();
+                            recognition.lang = 'en-US';
+                            recognition.start();
+                            setInput("Listening...");
+                            recognition.onresult = (event: any) => {
+                                const transcript = event.results[0][0].transcript;
+                                setInput(transcript);
+                            };
+                            recognition.onerror = () => setInput("");
+                        }}
+                        className="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-md transition-colors"
+                        title="Speak Policy"
+                    >
+                        <Mic className="w-3 h-3" />
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={isLoading || !input.trim()}
+                        className="p-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-500 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors"
+                    >
+                        {isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                    </button>
+                </div>
             </form>
         </div>
     );
