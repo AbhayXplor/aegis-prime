@@ -1,6 +1,7 @@
 "use client";
 
 import { DemoController } from "./DemoController";
+import { Home, DollarSign, Shield, FileText, Settings } from "lucide-react";
 
 interface SidebarProps {
     currentView: string;
