@@ -1,8 +1,11 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Gemini AI with the provided key
-// In production, this should be in .env.local, but for the hackathon demo we use the provided key directly
-const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyC-TjD_wK1UmD36nTnYRlCeZX5OIw51K9Y";
+const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
+
+if (!API_KEY) {
+  console.warn("NEXT_PUBLIC_GEMINI_API_KEY is not set. AI features will be disabled.");
+}
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 
