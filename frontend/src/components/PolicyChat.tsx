@@ -5,7 +5,7 @@ import { Send, Shield, CheckCircle, AlertTriangle, Loader2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion";
 import { parsePolicyIntent, PolicyIntent } from "@/lib/policyParser";
 
-import { setPolicy, whitelistRecipient } from "@/lib/blockchain";
+import { setPolicy, whitelistRecipient, setSpendingLimit } from "@/lib/blockchain";
 
 export function PolicyChat() {
     const [input, setInput] = useState("");
@@ -32,6 +32,11 @@ export function PolicyChat() {
 
             if (proposedPolicy.type === "RECIPIENT") {
                 success = await whitelistRecipient(aegisAddress, proposedPolicy.target, true);
+            } else if (proposedPolicy.type === "SPENDING_LIMIT") {
+                const tokenAddress = proposedPolicy.target || process.env.NEXT_PUBLIC_MNEE_ADDRESS || "";
+                const amount = proposedPolicy.amount || "0";
+                const period = proposedPolicy.period || 86400;
+                success = await setSpendingLimit(aegisAddress, tokenAddress, amount, period);
             } else {
                 success = await setPolicy(aegisAddress, proposedPolicy.target, proposedPolicy.selector || "0x00000000", true);
             }
@@ -104,10 +109,24 @@ export function PolicyChat() {
                                 <span className="block text-gray-600 text-[8px]">TARGET</span>
                                 {proposedPolicy.target.slice(0, 8)}...
                             </div>
-                            <div>
-                                <span className="block text-gray-600 text-[8px]">SELECTOR</span>
-                                {proposedPolicy.selector}
-                            </div>
+                            {proposedPolicy.type === "FUNCTION" && (
+                                <div>
+                                    <span className="block text-gray-600 text-[8px]">SELECTOR</span>
+                                    {proposedPolicy.selector}
+                                </div>
+                            )}
+                            {proposedPolicy.type === "SPENDING_LIMIT" && (
+                                <>
+                                    <div>
+                                        <span className="block text-gray-600 text-[8px]">AMOUNT</span>
+                                        {proposedPolicy.amount} MNEE
+                                    </div>
+                                    <div>
+                                        <span className="block text-gray-600 text-[8px]">PERIOD</span>
+                                        {proposedPolicy.period === 604800 ? "Weekly" : proposedPolicy.period === 2592000 ? "Monthly" : `${proposedPolicy.period}s`}
+                                    </div>
+                                </>
+                            )}
                         </div>
                         <div className="flex space-x-2">
                             <button

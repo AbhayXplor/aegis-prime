@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Wallet, ShieldCheck, AlertTriangle, Coins, Plus, Building2, User } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Wallet, ShieldCheck, AlertTriangle, Coins, Plus, Building2, User, Power, Play } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface WalletStatusProps {
@@ -25,8 +25,10 @@ export function WalletStatus({
     address = "Not Connected",
     isConnected = false,
     isRealMode = false,
-    vaultBalance = "0.00"
-}: WalletStatusProps) {
+    vaultBalance = "0.00",
+    isPaused = false,
+    setIsPaused
+}: WalletStatusProps & { isPaused: boolean; setIsPaused: (paused: boolean) => void }) {
     const [viewMode, setViewMode] = useState<"WALLET" | "VAULT">("WALLET");
 
     // Determine which balance to show
@@ -125,6 +127,40 @@ export function WalletStatus({
                     <Plus className="w-3 h-3" /> {isRealMode ? 'Add Real' : 'Add Test'}
                 </button>
             </div>
+
+            {/* Kill Switch */}
+            {!isRealMode && isConnected && (
+                <div className="mb-6">
+                    <button
+                        onClick={async () => {
+                            try {
+                                const { togglePause } = await import("@/lib/blockchain");
+                                const aegisAddress = process.env.NEXT_PUBLIC_AEGIS_GUARD_ADDRESS;
+                                if (!aegisAddress) return alert("Aegis Address missing");
+
+                                const success = await togglePause(aegisAddress, !isPaused);
+                                if (success) setIsPaused(!isPaused);
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        }}
+                        className={`w-full flex items-center justify-center gap-2 px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-lg border transition-all active:scale-95 ${isPaused
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                            : "bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20 shadow-[0_0_20px_rgba(239,68,68,0.2)] animate-pulse"
+                            }`}
+                    >
+                        {isPaused ? (
+                            <>
+                                <Play className="w-4 h-4" /> Resume Operations
+                            </>
+                        ) : (
+                            <>
+                                <Power className="w-4 h-4" /> Emergency Kill Switch
+                            </>
+                        )}
+                    </button>
+                </div>
+            )}
 
             {/* Footer */}
             <div className="pt-3 border-t border-zinc-800 flex items-center justify-between text-[10px]">

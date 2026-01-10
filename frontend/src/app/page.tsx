@@ -23,10 +23,23 @@ export default function Home() {
   const [isRealMode, setIsRealMode] = useState(false);
   const [demoPhase, setDemoPhase] = useState(0);
   const [simulatedBalance, setSimulatedBalance] = useState<string | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
 
   const MNEE_ADDRESS = isRealMode
     ? "0x8ccedbAe4916b79da7F3F612EfB2EB93A2bFD6cF"
     : (process.env.NEXT_PUBLIC_MNEE_ADDRESS || "");
+
+  // Check Paused State on Load & Connect
+  useEffect(() => {
+    if (userAddress) {
+      import("@/lib/blockchain").then(({ getPausedState }) => {
+        const AEGIS_ADDRESS = process.env.NEXT_PUBLIC_AEGIS_GUARD_ADDRESS;
+        if (AEGIS_ADDRESS) {
+          getPausedState(AEGIS_ADDRESS).then(setIsPaused);
+        }
+      });
+    }
+  }, [userAddress]);
 
   // 1. Connect Wallet Function
   const connectWallet = async () => {
@@ -143,6 +156,15 @@ export default function Home() {
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
                 <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Live</span>
               </div>
+              <button
+                onClick={() => {
+                  setIsConnected(false);
+                  setUserAddress(null);
+                }}
+                className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all"
+              >
+                Disconnect
+              </button>
             </div>
           )}
         </div>
@@ -176,6 +198,8 @@ export default function Home() {
             isConnected={isConnected}
             isRealMode={isRealMode}
             vaultBalance={vaultBalance}
+            isPaused={isPaused}
+            setIsPaused={setIsPaused}
           />
         </div>
 
@@ -205,7 +229,7 @@ export default function Home() {
 
           {/* Simulation Controls (Hidden in Demo Mode usually, but kept for manual override) */}
           <div className="h-auto">
-            <SimulationControl isRealMode={isRealMode} />
+            <SimulationControl isRealMode={isRealMode} isPaused={isPaused} />
           </div>
         </div>
 
@@ -236,6 +260,7 @@ export default function Home() {
         onPhaseChange={setDemoPhase}
         currentBalance={simulatedBalance || mneeBalance}
         setSimulatedBalance={setSimulatedBalance}
+        isPaused={isPaused}
       />
     </div>
   );

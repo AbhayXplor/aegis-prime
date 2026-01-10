@@ -17,7 +17,14 @@ const AEGIS_ABI = [
     "event Executed(address indexed target, bytes4 indexed selector, uint256 value, bytes data)",
     "event PolicyViolation(address indexed target, bytes4 indexed selector, string reason, bytes data)",
     "function setPolicy(address target, bytes4 selector, bool allowed) external",
-    "function setRecipientWhitelist(address recipient, bool allowed) external"
+    "function setRecipientWhitelist(address recipient, bool allowed) external",
+    "function setSpendingLimit(address token, uint256 amount, uint256 period) external",
+    "function setAgent(address _agent) external",
+    "function execute(address target, bytes calldata data) external payable",
+    "function pause() external",
+    "function unpause() external",
+    "function paused() external view returns (bool)",
+    "event PolicyUpdated(address indexed target, bytes4 indexed selector, bool allowed)"
 ];
 
 const SEPOLIA_RPC_FALLBACKS = [
@@ -161,6 +168,30 @@ export async function setPolicy(aegisAddress: string, target: string, selector: 
     }
 }
 
+export async function setSpendingLimit(aegisAddress: string, token: string, amount: string, period: number) {
+    try {
+        if (typeof window === 'undefined' || !window.ethereum) {
+            throw new Error("No crypto wallet found.");
+        }
+
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        await checkAndSwitchNetwork(provider, false);
+
+        await provider.send("eth_requestAccounts", []);
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(aegisAddress, AEGIS_ABI, signer);
+
+        const amountWei = ethers.parseUnits(amount, 18); // Assuming 18 decimals
+        const tx = await contract.setSpendingLimit(token, amountWei, period);
+        await tx.wait();
+        return true;
+    } catch (error: any) {
+        console.error("Error setting spending limit:", error);
+        alert(`Error: ${error.message || "Failed to set spending limit"}`);
+        return false;
+    }
+}
+
 export async function whitelistRecipient(aegisAddress: string, recipient: string, allowed: boolean) {
     try {
         if (typeof window === 'undefined' || !window.ethereum) {
@@ -180,6 +211,38 @@ export async function whitelistRecipient(aegisAddress: string, recipient: string
     } catch (error: any) {
         console.error("Error whitelisting recipient:", error);
         alert(`Error: ${error.message || "Failed to whitelist recipient"}`);
+        return false;
+    }
+}
+
+export async function togglePause(aegisAddress: string, shouldPause: boolean) {
+    try {
+        if (!window.ethereum) return false;
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        await checkAndSwitchNetwork(provider, false);
+
+        await provider.send("eth_requestAccounts", []);
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(aegisAddress, AEGIS_ABI, signer);
+
+        const tx = shouldPause ? await contract.pause() : await contract.unpause();
+        await tx.wait();
+        return true;
+    } catch (error: any) {
+        console.error("Error toggling pause:", error);
+        alert(`Error: ${error.message || "Failed to toggle pause"}`);
+        return false;
+    }
+}
+
+export async function getPausedState(aegisAddress: string): Promise<boolean> {
+    try {
+        const rpcUrl = process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL || SEPOLIA_RPC_FALLBACKS[0];
+        const provider = new ethers.JsonRpcProvider(rpcUrl);
+        const contract = new ethers.Contract(aegisAddress, AEGIS_ABI, provider);
+        return await contract.paused();
+    } catch (error) {
+        console.error("Error fetching paused state:", error);
         return false;
     }
 }

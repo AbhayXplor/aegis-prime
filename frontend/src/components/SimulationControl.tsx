@@ -6,9 +6,10 @@ import { supabase } from "../lib/supabase";
 
 interface SimulationControlProps {
     isRealMode?: boolean;
+    isPaused?: boolean;
 }
 
-export default function SimulationControl({ isRealMode = false }: SimulationControlProps) {
+export default function SimulationControl({ isRealMode = false, isPaused = false }: SimulationControlProps) {
     const [isRunning, setIsRunning] = useState(false);
     const [status, setStatus] = useState("IDLE");
 
@@ -37,6 +38,14 @@ export default function SimulationControl({ isRealMode = false }: SimulationCont
 
         const runSimulation = async () => {
             if (!isRunning || !active) return;
+
+            if (isPaused) {
+                setStatus("SYSTEM PAUSED");
+                if (active && isRunning) {
+                    timeoutId = setTimeout(runSimulation, 2000); // Check again in 2s
+                }
+                return;
+            }
 
             setStatus("ATTACKING");
             try {
@@ -85,8 +94,8 @@ export default function SimulationControl({ isRealMode = false }: SimulationCont
                         AI EMPLOYEE SIMULATION
                     </h3>
                     <p className="text-[10px] text-gray-400 font-mono mt-1">
-                        STATUS: <span className={isRunning ? "text-cyber-red font-bold" : "text-gray-500"}>
-                            {isRealMode ? "DISABLED (REAL MODE)" : (status === "ATTACKING" ? "EXECUTING TRANSACTIONS..." : status)}
+                        STATUS: <span className={isRunning ? (isPaused ? "text-yellow-500 font-bold animate-pulse" : "text-cyber-red font-bold") : "text-gray-500"}>
+                            {isRealMode ? "DISABLED (REAL MODE)" : (isPaused ? "SYSTEM PAUSED (KILL SWITCH)" : (status === "ATTACKING" ? "EXECUTING TRANSACTIONS..." : status))}
                         </span>
                     </p>
                 </div>

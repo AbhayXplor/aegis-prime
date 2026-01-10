@@ -2,13 +2,14 @@
 pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
 /**
  * @title AegisGuard
  * @notice A smart wallet that enforces Function-Level Intents AND Parameter-Level Spending Limits.
  * @dev Supports native ETH and ERC-20 (MNEE) tokens.
  */
-contract AegisGuard {
+contract AegisGuard is Pausable {
     // --- State Variables ---
 
     address public owner;
@@ -20,11 +21,16 @@ contract AegisGuard {
     // Recipient Whitelist for Transfers
     mapping(address => bool) public recipientWhitelist;
 
-    // Token Address -> Daily Spending Limit (0 = No Limit)
-    mapping(address => uint256) public spendingLimits;
-    
-    // Token Address -> Amount Spent Today
-    mapping(address => uint256) public spentToday;
+    // Struct for Streaming Allowances
+    struct Limit {
+        uint256 amount;      // Max amount per period
+        uint256 period;      // Period in seconds (e.g., 86400 for daily)
+        uint256 lastReset;   // Timestamp of last reset
+        uint256 currentUsage;// Amount spent in current period
+    }
+
+    // Token Address -> Limit Config
+    mapping(address => Limit) public spendingLimits;
 
     // --- Events ---
     event Deposit(address indexed sender, uint256 amount);
@@ -63,9 +69,17 @@ contract AegisGuard {
         emit RecipientWhitelisted(recipient, allowed);
     }
 
-    function setSpendingLimit(address token, uint256 limit) external onlyOwner {
-        spendingLimits[token] = limit;
-        emit LimitUpdated(token, limit);
+    function setSpendingLimit(address token, uint256 amount, uint256 period) external onlyOwner {
+        spendingLimits[token] = Limit(amount, period, block.timestamp, 0);
+        emit LimitUpdated(token, amount);
+    }
+
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
     }
 
     function setAgent(address _agent) external onlyOwner {
@@ -75,7 +89,7 @@ contract AegisGuard {
 
     // --- Execution Logic ---
 
-    function execute(address target, bytes calldata data) external onlyAgentOrOwner payable {
+    function execute(address target, bytes calldata data) external onlyAgentOrOwner whenNotPaused payable {
         require(data.length >= 4, "Aegis: Data too short");
         bytes4 selector = bytes4(data[:4]);
 
@@ -124,13 +138,21 @@ contract AegisGuard {
             amount := calldataload(add(data.offset, 36))
         }
 
-        uint256 limit = spendingLimits[token];
-        if (limit > 0) {
-            if (spentToday[token] + amount > limit) {
+        Limit storage limit = spendingLimits[token];
+        
+        // If period is 0, no limit is enforced
+        if (limit.period > 0) {
+            // Check if period has passed
+            if (block.timestamp >= limit.lastReset + limit.period) {
+                limit.currentUsage = 0;
+                limit.lastReset = block.timestamp;
+            }
+
+            if (limit.currentUsage + amount > limit.amount) {
                 emit PolicyViolation(token, bytes4(data[:4]), "Spending Limit Exceeded", data);
                 return false;
             }
-            spentToday[token] += amount;
+            limit.currentUsage += amount;
         }
         return true;
     }

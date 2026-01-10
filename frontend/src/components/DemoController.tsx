@@ -7,9 +7,10 @@ interface DemoControllerProps {
     onPhaseChange: (phase: number) => void;
     currentBalance: string;
     setSimulatedBalance: (balance: string) => void;
+    isPaused?: boolean;
 }
 
-export function DemoController({ onPhaseChange, currentBalance, setSimulatedBalance }: DemoControllerProps) {
+export function DemoController({ onPhaseChange, currentBalance, setSimulatedBalance, isPaused = false }: DemoControllerProps) {
     const [phase, setPhase] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -71,7 +72,7 @@ export function DemoController({ onPhaseChange, currentBalance, setSimulatedBala
     ];
 
     const nextPhase = async () => {
-        if (isProcessing) return;
+        if (isProcessing || isPaused) return;
         setIsProcessing(true);
 
         const currentHandler = phases[(phase + 1) % phases.length].handler;
@@ -104,10 +105,23 @@ export function DemoController({ onPhaseChange, currentBalance, setSimulatedBala
 
                 <button
                     onClick={nextPhase}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-lg shadow-blue-900/20 active:scale-95"
+                    disabled={isPaused}
+                    className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-lg ${isPaused
+                        ? "bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700"
+                        : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/20 active:scale-95"
+                        }`}
                 >
-                    <Play className="w-3 h-3 fill-current" />
-                    {phases[(phase + 1) % phases.length].action}
+                    {isPaused ? (
+                        <>
+                            <AlertTriangle className="w-3 h-3 text-yellow-500" />
+                            PAUSED
+                        </>
+                    ) : (
+                        <>
+                            <Play className="w-3 h-3 fill-current" />
+                            {phases[(phase + 1) % phases.length].action}
+                        </>
+                    )}
                 </button>
 
                 <button
