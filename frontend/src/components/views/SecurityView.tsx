@@ -4,7 +4,11 @@ import { ActivityFeed } from "../ActivityFeed";
 import { PageHeader } from "../PageHeader";
 import { Shield, Activity, Map as MapIcon } from "lucide-react";
 
-export function SecurityView() {
+interface SecurityViewProps {
+    isRealMode?: boolean;
+}
+
+export function SecurityView({ isRealMode = false }: SecurityViewProps) {
     return (
         <div className="space-y-8">
             <PageHeader
@@ -33,7 +37,13 @@ export function SecurityView() {
                             </div>
                         </div>
                         <div className="h-[400px] relative">
-                            <ThreatMap />
+                            {isRealMode ? (
+                                <div className="absolute inset-0 flex items-center justify-center text-slate-500 text-sm">
+                                    No active threats detected in Real Mode.
+                                </div>
+                            ) : (
+                                <ThreatMap />
+                            )}
                         </div>
                     </div>
 
@@ -67,7 +77,13 @@ export function SecurityView() {
                             </div>
                         </div>
                         <div className="flex-1 overflow-hidden relative">
-                            <ActivityFeed />
+                            {isRealMode ? (
+                                <div className="absolute inset-0 flex items-center justify-center text-slate-500 text-sm p-4 text-center">
+                                    Real-time audit log is clear.
+                                </div>
+                            ) : (
+                                <ActivityFeed />
+                            )}
                         </div>
                     </div>
                 </div>

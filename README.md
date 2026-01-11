@@ -1,23 +1,32 @@
-# Aegis Prime: Autonomous Security Protocol
+# Aegis CFO: The Autonomous Financial Guardian
 
-**Aegis Prime** is an AI-powered security firewall for blockchain transactions. It acts as a "Smart Vault" that intercepts transactions, analyzes them with Gemini AI for risk, and enforces granular policies (e.g., "Allow payments to OpenAI", "Block transfers > 1000 MNEE").
+**Aegis CFO** is an AI-powered financial operating system for crypto organizations. It moves beyond simple "multisig" wallets by acting as an intelligent, proactive CFO that manages payroll, analyzes runway, and enforces security policies in real-time.
 
-![Aegis Prime Dashboard](dashboard.png)
+![Aegis CFO Dashboard](frontend/public/dashboard-preview.png)
 
-## 🚀 Features
+## 🚀 Key Features
 
-*   **AI Policy Engine**: Natural language policies ("Allow AWS payments") parsed by Gemini 2.5 Flash.
-*   **Smart Vault**: A Solidity smart contract (`AegisGuard`) that holds funds and enforces rules on-chain.
-*   **Real-time Threat Map**: Visualizes blocked threats and authorized operations globally.
-*   **Rogue Agent Simulation**: Built-in demo mode to simulate attacks and valid traffic.
-*   **MNEE Token Integration**: Full support for ERC-20 token transfers and spending limits.
+### 🧠 AI-Powered Financial Intelligence
+*   **Natural Language Policies**: "Allow monthly payroll up to 50,000 MNEE" — parsed and enforced by the **AegisGuard** smart contract.
+*   **Runway Forecasting**: Real-time calculation of financial survival based on live burn rates and treasury balance.
+*   **Shadow Spend Detection**: AI analysis of transaction history to identify and flag unlabelled recurring drains.
+
+### 🛡️ Smart Vault Architecture
+*   **AegisGuard Contract**: A custom Solidity smart contract that holds funds and enforces AI-defined rules on-chain.
+*   **Allowance-Based Delegation**: The AI acts as a "Smart Delegate," executing approved recurring payments (like payroll) within strict, user-defined limits.
+*   **MNEE Token Native**: Built from the ground up to manage and protect MNEE token treasuries.
+
+### 📊 Institutional-Grade Dashboard
+*   **"CFO" View**: Aggregated financial health, not just a list of transactions.
+*   **Live Threat Map**: Visualizes blocked attacks and authorized operations globally.
+*   **Payroll Simulator**: Test automated disbursement logic before deploying real funds.
 
 ## 🛠️ Tech Stack
 
-*   **Frontend**: Next.js 14, Tailwind CSS, Framer Motion, Lucide React.
+*   **Frontend**: Next.js 14, Tailwind CSS, Framer Motion, Recharts.
 *   **Blockchain**: Hardhat, Ethers.js, Solidity (Sepolia Testnet).
-*   **AI**: Google Gemini API.
-*   **Backend**: Supabase (Real-time logs & analytics).
+*   **AI**: Google Gemini 2.5 Flash (Policy Parsing & Risk Analysis).
+*   **Backend**: Supabase (Real-time logs, entity management, & analytics).
 
 ## 📦 Project Structure
 

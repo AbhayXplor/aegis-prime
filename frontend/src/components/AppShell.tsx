@@ -7,10 +7,12 @@ interface AppShellProps {
     children: ReactNode;
     currentView: string;
     setCurrentView: (view: string) => void;
-    demoProps?: any; // Using any for simplicity here, but ideally typed
+    isRealMode: boolean;
+    setIsRealMode: (real: boolean) => void;
+    demoProps?: any;
 }
 
-export function AppShell({ children, currentView, setCurrentView, demoProps }: AppShellProps) {
+export function AppShell({ children, currentView, setCurrentView, isRealMode, setIsRealMode, demoProps }: AppShellProps) {
     return (
         <div className="min-h-screen flex bg-[#020617] text-slate-50">
             {/* Fixed Sidebar */}
@@ -18,6 +20,8 @@ export function AppShell({ children, currentView, setCurrentView, demoProps }: A
                 <Sidebar
                     currentView={currentView}
                     setCurrentView={setCurrentView}
+                    isRealMode={isRealMode}
+                    setIsRealMode={setIsRealMode}
                     demoProps={demoProps}
                 />
             </aside>

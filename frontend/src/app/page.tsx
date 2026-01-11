@@ -2,13 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import { getETHBalance, getMNEEBalance, MNEE_ABI } from "@/lib/blockchain";
+import { getETHBalance, getMNEEBalance, getPausedState } from "@/lib/blockchain";
+import { MOCK_MNEE_ADDRESS, REAL_MNEE_ADDRESS, MNEE_ABI } from "@/lib/constants";
+import { LandingPage } from "@/components/LandingPage";
 import { DemoController } from "@/components/DemoController";
 import { AppShell } from "@/components/AppShell";
 import { DashboardView } from "@/components/views/DashboardView";
 import { PayrollView } from "@/components/views/PayrollView";
 import { SecurityView } from "@/components/views/SecurityView";
 import { PolicyView } from "@/components/views/PolicyView";
+import { SettingsView } from "@/components/views/SettingsView";
 
 export default function Home() {
   const [currentView, setCurrentView] = useState("dashboard");
@@ -18,21 +21,10 @@ export default function Home() {
   const [userAddress, setUserAddress] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isRealMode, setIsRealMode] = useState(false);
+  const [showLanding, setShowLanding] = useState(true);
   const [demoPhase, setDemoPhase] = useState(0);
   const [simulatedBalance, setSimulatedBalance] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
-
-  // Check Paused State on Load & Connect
-  useEffect(() => {
-    if (userAddress) {
-      import("@/lib/blockchain").then(({ getPausedState }) => {
-        const AEGIS_ADDRESS = process.env.NEXT_PUBLIC_AEGIS_GUARD_ADDRESS;
-        if (AEGIS_ADDRESS) {
-          getPausedState(AEGIS_ADDRESS).then(setIsPaused);
-        }
-      });
-    }
-  }, [userAddress]);
 
   // Connect Wallet Function
   const connectWallet = async () => {
@@ -53,26 +45,59 @@ export default function Home() {
     }
   };
 
+  const disconnectWallet = () => {
+    setUserAddress(null);
+    setIsConnected(false);
+    setEthBalance("0.00");
+    setMneeBalance("0.00");
+  };
+
   const fetchBalances = async (address: string, provider: any) => {
+    // Reset balances to prevent stale data when switching modes/networks
+    setMneeBalance("0.00");
+    setVaultBalance("0.00");
+
     try {
       // ETH Balance
       const eth = await provider.getBalance(address);
       setEthBalance(parseFloat(ethers.formatEther(eth)).toFixed(4));
 
       // MNEE Balance
-      const MNEE_ADDRESS = process.env.NEXT_PUBLIC_MNEE_ADDRESS;
+      // Use Real address if in Real Mode, otherwise Mock
+      const MNEE_ADDRESS = isRealMode ? REAL_MNEE_ADDRESS : MOCK_MNEE_ADDRESS;
+
       if (MNEE_ADDRESS) {
         const mneeContract = new ethers.Contract(MNEE_ADDRESS, MNEE_ABI, provider);
         const mnee = await mneeContract.balanceOf(address);
         setMneeBalance(parseFloat(ethers.formatEther(mnee)).toFixed(2));
       }
 
-      // Vault Balance (Mock for demo)
-      setVaultBalance("1,250,000.00");
+      // Vault Balance
+      const AEGIS_ADDRESS = process.env.NEXT_PUBLIC_AEGIS_GUARD_ADDRESS;
+      if (AEGIS_ADDRESS && MNEE_ADDRESS) {
+        const mneeContract = new ethers.Contract(MNEE_ADDRESS, MNEE_ABI, provider);
+        const vault = await mneeContract.balanceOf(AEGIS_ADDRESS);
+        setVaultBalance(parseFloat(ethers.formatEther(vault)).toFixed(2));
+      }
     } catch (err) {
       console.error("Error fetching balances:", err);
     }
   };
+
+  useEffect(() => {
+    // Check if user has visited before or just default to landing
+    // For now, always show landing on refresh for the "wow" factor
+  }, []);
+
+  // Check Paused State on Load & Connect
+  useEffect(() => {
+    if (userAddress) {
+      const AEGIS_ADDRESS = process.env.NEXT_PUBLIC_AEGIS_GUARD_ADDRESS;
+      if (AEGIS_ADDRESS) {
+        getPausedState(AEGIS_ADDRESS).then(setIsPaused);
+      }
+    }
+  }, [userAddress]);
 
   // Fetch Data (Only if connected)
   useEffect(() => {
@@ -81,9 +106,20 @@ export default function Home() {
     fetchBalances(userAddress, provider);
   }, [userAddress, isRealMode]);
 
+  // Clear simulated balance when switching to Real Mode
+  useEffect(() => {
+    if (isRealMode) {
+      setSimulatedBalance(null);
+    }
+  }, [isRealMode]);
+
+  if (showLanding) {
+    return <LandingPage onEnter={() => setShowLanding(false)} />;
+  }
+
   const renderView = () => {
     const commonProps = {
-      balance: simulatedBalance || mneeBalance,
+      balance: isRealMode ? mneeBalance : (simulatedBalance || mneeBalance),
       ethBalance,
       vaultBalance,
       userAddress,
@@ -92,7 +128,8 @@ export default function Home() {
       isPaused,
       setIsPaused,
       demoPhase,
-      connectWallet
+      connectWallet,
+      disconnectWallet
     };
 
     switch (currentView) {
@@ -101,9 +138,11 @@ export default function Home() {
       case "payroll":
         return <PayrollView {...commonProps} />;
       case "security":
-        return <SecurityView />;
+        return <SecurityView isRealMode={isRealMode} />;
       case "policy":
         return <PolicyView />;
+      case "settings":
+        return <SettingsView />;
       default:
         return <DashboardView {...commonProps} />;
     }
@@ -113,6 +152,8 @@ export default function Home() {
     <AppShell
       currentView={currentView}
       setCurrentView={setCurrentView}
+      isRealMode={isRealMode}
+      setIsRealMode={setIsRealMode}
       demoProps={{
         onPhaseChange: setDemoPhase,
         currentBalance: simulatedBalance || mneeBalance,

@@ -6,6 +6,8 @@ import { Home, DollarSign, Shield, FileText, Settings } from "lucide-react";
 interface SidebarProps {
     currentView: string;
     setCurrentView: (view: string) => void;
+    isRealMode: boolean;
+    setIsRealMode: (real: boolean) => void;
     demoProps?: {
         onPhaseChange: (phase: number) => void;
         currentBalance: string;
@@ -14,7 +16,7 @@ interface SidebarProps {
     }
 }
 
-export function Sidebar({ currentView, setCurrentView, demoProps }: SidebarProps) {
+export function Sidebar({ currentView, setCurrentView, isRealMode, setIsRealMode, demoProps }: SidebarProps) {
     const menuItems = [
         { id: 'dashboard', label: 'Overview', icon: Home },
         { id: 'payroll', label: 'Payroll', icon: DollarSign },
@@ -25,12 +27,30 @@ export function Sidebar({ currentView, setCurrentView, demoProps }: SidebarProps
     return (
         <div className="flex flex-col h-full bg-[#020617] border-r border-white/10">
             {/* Header */}
-            <div className="h-16 flex items-center px-6 border-b border-white/10">
+            <div className="h-16 flex items-center px-6 border-b border-white/10 justify-between">
                 <div className="flex items-center gap-2">
                     <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
                         <Shield className="w-4 h-4 text-white" />
                     </div>
                     <span className="font-semibold text-sm tracking-tight">Aegis CFO</span>
+                </div>
+            </div>
+
+            {/* Mode Switcher */}
+            <div className="px-4 py-4 border-b border-white/10">
+                <div className="bg-white/5 p-1 rounded-lg flex items-center">
+                    <button
+                        onClick={() => setIsRealMode(false)}
+                        className={`flex-1 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${!isRealMode ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                        Demo
+                    </button>
+                    <button
+                        onClick={() => setIsRealMode(true)}
+                        className={`flex-1 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${isRealMode ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                        Real
+                    </button>
                 </div>
             </div>
 
@@ -57,7 +77,7 @@ export function Sidebar({ currentView, setCurrentView, demoProps }: SidebarProps
 
             {/* Footer */}
             <div className="p-4 border-t border-white/10 space-y-4">
-                {demoProps && (
+                {!isRealMode && demoProps && (
                     <DemoController
                         {...demoProps}
                         className="w-full"
