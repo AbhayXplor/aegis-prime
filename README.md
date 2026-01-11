@@ -56,7 +56,8 @@ npm install
 ```
 
 ### 2. Environment Setup
-Create a `.env.local` file in `frontend/`:
+1.  Get a free API Key from [Google AI Studio](https://aistudio.google.com/).
+2.  Create a `.env.local` file in `frontend/`:
 ```env
 NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_key
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url

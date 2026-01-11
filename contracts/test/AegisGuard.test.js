@@ -37,11 +37,13 @@ describe("AegisGuard", function () {
 
     it("Should block agent from calling unauthorized function", async function () {
         // Agent tries to call 'approve' which is NOT allowed
-        const payload = APPROVE_SELECTOR + "000000000000000000000000" + agent.address.slice(2);
+        // Ensure payload is lowercase to avoid casing issues in event assertions
+        const payload = (APPROVE_SELECTOR + "000000000000000000000000" + agent.address.slice(2)).toLowerCase();
 
         await expect(
             aegis.connect(agent).execute(mockTarget.target, payload)
-        ).to.be.revertedWith("Aegis: Policy Violation - Function Not Allowed");
+        ).to.emit(aegis, "PolicyViolation")
+        .withArgs(mockTarget.target, APPROVE_SELECTOR, "Policy Violation - Not Authorized", payload);
     });
 
     it("Should allow agent to call authorized function", async function () {
