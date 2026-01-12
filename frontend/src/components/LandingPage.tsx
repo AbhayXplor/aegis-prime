@@ -85,7 +85,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
             {/* Footer */}
             <footer className="relative z-10 border-t border-white/5 bg-black/20 backdrop-blur-md py-8">
                 <div className="container mx-auto px-6 text-center text-slate-500 text-sm">
-                    &copy; 2024 Aegis Finance. Built for MNEE Hackathon.
+                    &copy; 2026 Aegis Finance. Built for MNEE Hackathon.
                 </div>
             </footer>
         </div>

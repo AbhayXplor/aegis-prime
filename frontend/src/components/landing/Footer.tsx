@@ -13,22 +13,24 @@ export function Footer() {
                         <h4 className="font-bold text-white mb-4">Product</h4>
                         <ul className="space-y-2 text-sm text-slate-400">
                             <li><a href="/features" className="hover:text-blue-400">Features</a></li>
-                            <li><a href="/pricing" className="hover:text-blue-400">Pricing</a></li>
+                            <li><a href="https://github.com/AbhayXplor/aegis-prime" target="_blank" className="hover:text-blue-400">GitHub Repository</a></li>
                             <li><a href="/dashboard" className="hover:text-blue-400">Dashboard</a></li>
                         </ul>
                     </div>
                     <div>
                         <h4 className="font-bold text-white mb-4">Legal</h4>
                         <ul className="space-y-2 text-sm text-slate-400">
-                            <li><a href="#" className="hover:text-blue-400">Privacy Policy</a></li>
-                            <li><a href="#" className="hover:text-blue-400">Terms of Service</a></li>
+                            <li><a href="/privacy" className="hover:text-blue-400">Privacy Policy</a></li>
+                            <li><a href="/tos" className="hover:text-blue-400">Terms of Service</a></li>
                         </ul>
                     </div>
                 </div>
                 <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <p className="text-sm text-slate-500">© 2026 Aegis CFO. All rights reserved.</p>
+                    <p className="text-sm text-slate-500">© 2026 Aegis CFO. Built for MNEE Hackathon.</p>
                     <div className="flex items-center gap-6">
-                        {/* Social icons would go here */}
+                        <a href="https://www.linkedin.com/in/abhayjithendra/" target="_blank" className="text-slate-500 hover:text-blue-400 transition-colors">
+                            LinkedIn
+                        </a>
                     </div>
                 </div>
             </div>

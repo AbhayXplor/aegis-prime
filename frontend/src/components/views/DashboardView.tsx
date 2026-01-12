@@ -178,9 +178,9 @@ export function DashboardView(props: DashboardViewProps) {
                                     </div>
                                 ) : (
                                     [
-                                        { name: 'Collector', time: '23 mins ago', status: 'success' },
-                                        { name: 'Invention', time: '48 mins ago', status: 'pending' },
-                                        { name: 'Ocinnect', time: '1 day ago', status: 'failed' }
+                                        { name: 'Monthly Salaries', time: '23 mins ago', status: 'success' },
+                                        { name: 'Office Rent', time: '48 mins ago', status: 'pending' },
+                                        { name: 'AWS Infrastructure', time: '1 day ago', status: 'failed' }
                                     ].map((item, i) => (
                                         <div key={i} className="flex items-center justify-between">
                                             <div className="flex items-center gap-3">
