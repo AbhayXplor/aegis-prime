@@ -50,7 +50,7 @@ export function SimulationControl({ isRealMode = false, isPaused = false }: Simu
 
             setStatus(attackType === 'PAYROLL' ? "PROCESSING PAYROLL..." : "UNAUTHORIZED TRANSFER DETECTED...");
             try {
-                await fetch('/api/rogue-agent', {
+                fetch('/api/rogue-agent', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: attackType === 'PAYROLL' ? 'RANDOM' : 'ATTACK', type: attackType })
@@ -60,7 +60,7 @@ export function SimulationControl({ isRealMode = false, isPaused = false }: Simu
             }
 
             if (active && isRunning) {
-                timeoutId = setTimeout(runSimulation, 1000); // Wait 1s between attacks
+                timeoutId = setTimeout(runSimulation, 500); // Wait 500ms between attacks
             }
         };
 
